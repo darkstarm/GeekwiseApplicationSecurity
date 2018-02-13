@@ -4,10 +4,16 @@ const favicon = require('serve-favicon');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const csrf = require('csurf');
+
 
 const index = require('./routes/index');
 const users = require('./routes/users');
 const post = require('./routes/post');
+
+//CSRF protection middleware
+const csrfProtection = csrf({ cookie: true });
+const parseForm = bodyParser.urlencoded({ extended: false });
 
 const app = express();
 
