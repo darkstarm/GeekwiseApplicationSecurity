@@ -56,7 +56,9 @@ app.use('/api', controllers);
 // not authenticated handler
 app.use(function(err, req, res, next) {
     if (err.name === 'UnauthorizedError') {
-        res.status(401).send('invalid token...');
+        common.userNotAuthorized(res);
+    } else {
+        next();
     }
 });
 

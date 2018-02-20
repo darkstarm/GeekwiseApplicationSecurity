@@ -11,8 +11,12 @@ MyBlogApp.loginHandler = function(e) {
         if (status === 200) {
             MyBlogApp.login(data.data);
             document.location.href = '/users/welcome?name=' + data.data.username;
+            const localToken = localStorage.setItem('token', data.data.token);
+            const localUser = localStorage.setItem('userId', 'random');
         } else if (status === 404) {
             MyBlogApp.toast('danger', data.message);
+        } else {
+            MyBlogApp.toast('danger', 'An error occurred, please try again.');
         }
     });
 }

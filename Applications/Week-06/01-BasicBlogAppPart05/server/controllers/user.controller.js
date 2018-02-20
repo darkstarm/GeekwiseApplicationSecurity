@@ -48,6 +48,7 @@ class UserController {
                 const hash = await bcrypt.hash(password, SALT_ROUNDS);
                 return Common.resultNotFound(res, LOGIN_FAIL);
             }
+            
         } catch (e) {
             // handle error
             return Common.resultErr(res, e.message);
