@@ -2,6 +2,7 @@ const express = require( 'express' );
 const router = express.Router();
 const db = require( '../db/db' );
 const crypto = require( 'crypto' );
+const text = '123|a123123123123123';
 
 const ENCRYPTKEY = crypto.pbkdf2Sync( process.env.ENCRYPTION_PASSWORD, '*somerandomsalt*', 10000, 32, 'sha512' );
 const TITLE = 'Encryption Sandbox';
@@ -10,7 +11,9 @@ const DEFAULT = {
   data1: 'Hello World',
   data2: 'ABC 123',
   data3: 'Security is key.',
-  data4: 'Protect your data!'
+  data4: 'Protect your data!',
+  data5: 'Cbc protection',
+  data6: 'Random numbers'
 };
 
 /* GET home page. */
@@ -37,6 +40,8 @@ router.post( '/', async function( req, res, next ) {
     data.data2 = encryptAesCtr( data.data2 );
     data.data3 = encryptAesGcm( '1', data.data3 );
     data.data4 = encryptAesGcm( '2', data.data4 );
+    data.data5 = encryptAesCbc( '3', data.data5 );
+    data.data6 = encryptAesCbc( '4', data.data6 );
     const resp = await db.upsert( data );
     if ( resp ) {
       console.log( resp );
@@ -57,11 +62,15 @@ function getDecodedData( data ) {
   data.data2Encrypted = data.data2;
   data.data3Encrypted = data.data3;
   data.data4Encrypted = data.data4;
+  data.data5Encrypted = data.data5;
+  data.data6Encrypted = data.data6;
   // decode data
   data.data1 = decryptAesCtr( data.data1 );
   data.data2 = decryptAesCtr( data.data2 );
   data.data3 = decryptAesGcm( '1', data.data3 );
   data.data4 = decryptAesGcm( '2', data.data4 );
+  data.data5 = decryptAesCbc( data.data5 );
+  data.data6 = decryptAesCbc( data.data6 );
   return Object.assign( { title: TITLE }, data );
 }
 
@@ -120,6 +129,24 @@ function decryptAesGcm( id, data ) {
     console.log( e );
     return '';
   }
+}
+
+function encryptAesCbc(thing, data) {
+  const iv = crypto.randomBytes( 16 );
+  var cipher = crypto.createCipher('aes-256-cbc', ENCRYPTKEY, iv);
+  var crypted = cipher.update(text, 'utf-8', 'hex');
+  crypted += cipher.final('hex');
+
+  return crypted;
+}
+
+function decryptAesCbc(thing, data) {
+  const iv = Buffer.from( data.substring( 0, 32 ), 'hex' );
+  var decipher = crypto.createDecipher('aes-256-cbc', thing);
+  var decrypted = decipher.update(data, 'hex', 'utf-8');
+  decrypted += decipher.final('utf-8');
+
+  return decrypted;
 }
 
 module.exports = router;
